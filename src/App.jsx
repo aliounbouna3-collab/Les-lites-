@@ -380,4 +380,56 @@ export default function App() {
   }, [payStep]);
 
   // ── Load subjects when user logs in ─────────────────────────────────────────
-  useEff
+  useEffect(() => {
+    const loadSubjects = async () => {
+      const bacType = profile?.bac_type || profile?.bac || form.bac;
+      if (!profile || !bacType) return;
+
+      try {
+        setLoading(true);
+        const data = await sb.getSubjects(bacType);
+        setSubjects(Array.isArray(data) ? data : []);
+      } catch {
+        showToast(T.error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadSubjects();
+  }, [profile, form.bac, T.error]);
+
+  return (
+    <main style={S.app}>
+      <section style={S.page}>
+        <header style={S.head}>
+          <div style={S.logo}>Les Elites</div>
+          <div style={S.logoS}>Baccalaureat</div>
+        </header>
+
+        <h1 style={S.title}>{T.welcome}</h1>
+        <p style={S.sub}>{T.tagline}</p>
+
+        {loading && <p style={S.sub}>{T.loading}</p>}
+
+        <div style={{ marginTop: 20 }}>
+          {subjects.length > 0 ? (
+            subjects.map((subject) => (
+              <article key={subject.id || subject.name} style={S.card}>
+                <strong>{subject.name || subject.title}</strong>
+              </article>
+            ))
+          ) : (
+            <p style={S.sub}>{T.noContent}</p>
+          )}
+        </div>
+
+        {toast && (
+          <div style={{ ...S.card, position: "fixed", left: 22, right: 22, bottom: 86 }}>
+            {toast}
+          </div>
+        )}
+      </section>
+    </main>
+  );
+}
